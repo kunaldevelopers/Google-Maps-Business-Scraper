@@ -299,7 +299,7 @@ If you encounter any issues or need support:
 
 - 📧 Email: kunalkprnc@gmail.com
 - 📱 WhatsApp: +91 9471376362
-- 💼 LinkedIn: [Kunal Kumar Pandit](https://linkedin.com/in/kunal-kumar-pandit)
+- 💼 LinkedIn: [Kunal Kumar Pandit](https://www.linkedin.com/in/kunalkumarpandit/)
 - 🌐 Website: [www.cyberkunal.com](https://www.cyberkunal.com)
 - 🐙 GitHub: [@kunaldevelopers](https://github.com/kunaldevelopers)
 
