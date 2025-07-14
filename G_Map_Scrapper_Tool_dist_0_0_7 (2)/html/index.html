@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Business Map Scrapper Tool - 0.0.7</title>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+	<link rel="stylesheet" type="text/css" href="../css/bootstrap.min.css" />
+	<link rel="stylesheet" type="text/css" href="../css/LineIcons.2.0.css" />
+	<link rel="stylesheet" type="text/css" href="../css/animate.css" />
+	<link rel="stylesheet" type="text/css" href="../css/main.css" />
+	<link rel="stylesheet" type="text/css" href="../css/reset.css" />
+	<link rel="stylesheet" type="text/css" href="../css/responsive.css" />
+	<link rel="stylesheet" type="text/css" href="../css/all.css">
+	<link rel="stylesheet" type="text/css" href="../css/sweetalert2.min.css">
+	<link rel="stylesheet" type="text/css" href="../css/modal-loading.css">
+	<link rel="stylesheet" type="text/css" href="../css/modal-loading-animate.css">
+	<link rel="stylesheet" type="text/css" href="../css/custom.css" />
+</head>
+<body>
+
+	<!-- Preloader -->
+	<div class="preloader">
+		<div class="preloader-inner">
+			<div class="preloader-icon">
+				<span></span>
+				<span></span>
+			</div>
+		</div>
+	</div>
+	<!-- /End Preloader -->
+
+	<!-- ========================= header start ========================= -->
+	<header class="header navbar-area">
+		<div class="container">
+			<div class="row align-items-center">
+				<div class="col-lg-12">
+					<div class="nav-inner">
+						<nav class="navbar navbar-expand-lg">
+							<a class="navbar-brand" href="">
+								<img src="../images/logo.png" alt="Logo">
+								<b style="font-size: 25px">
+									<span class="" style="font-size: 25px"> Business Map Scrapper Tool | v0.0.5 </span>
+								</b>
+							</a>
+							<b class="logged-user-info mb-4 mt-4" style="font-size: 25px">
+								<p class="">welcome, <span id="logged-name"></span></p>
+							</b>
+							<button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+								<span class="toggler-icon"></span>
+								<span class="toggler-icon"></span>
+								<span class="toggler-icon"></span>
+							</button>
+							<div class="collapse navbar-collapse sub-menu-bar free-user-info" id="navbarSupportedContent">
+								<ul id="nav" class="navbar-nav ms-auto free-user-info">
+									<li class="nav-item">
+										<a href="https://www.scrappertool.com" target="_blank">Contact</a>
+									</li>
+								</ul>
+							</div> <!-- navbar collapse -->
+							<div class="button free-user-info">
+								<a href="login.html" class="btn btn-sm white-bg mouse-dir">Upgrade PRO <span class="dir-part"></span></a>
+							</div>
+						</nav> <!-- navbar -->
+					</div>
+				</div>
+			</div> <!-- row -->
+		</div> <!-- container -->
+
+	</header>
+	<!-- ========================= header end ========================= -->
+
+	<div class="services section">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-12 col-12">
+					<form method="post" id="start-search-form" class="" enctype="multipart/form-data">
+						<div class="row mb-3 mt-2">
+							<div class="col-8">
+								<div class="form-group">
+									<label class="text-primary"> Upload keywords file </label>
+									<input type="file" name="keywords_file" id="keywords_file" class="form-control form-control-sm">
+								</div>
+							</div>
+							<div class="col-4">
+								<br>
+								<a class="btn btn-primary btn-sm download-keywords-name-btn"> <i class="fa fa-download"></i> Download Keywords Sample File</a>
+							</div>
+						</div>
+
+						<div class="row mb-2">
+							<div class="col-3">
+								<div class="form-group">
+									<label class="text-primary"> Scrape Limit type :  </label>
+									<br>
+									<label>
+										<input type="radio" name="scrape_limit_type" checked value="All"> All
+									</label>
+									<label>
+										<input type="radio" name="scrape_limit_type" value="Limit"> Set limit
+									</label>
+								</div>
+							</div>
+
+							<div class="col-3" style="display: none;" id="scrape_limit_section">
+								<div class="form-group">
+									<label class="text-primary"> Set Scrape limit </label>
+									<input type="number" name="scrape_limit" id="scrape_limit" placeholder="Enter scrape limit" class="form-control form-control-sm">
+								</div>
+							</div>
+						</div>
+
+						<div class="row mb-2">
+							<div class="col-12 text-center">
+								------- OR --------
+							</div>
+						</div>
+
+						<div class="row mb-2">
+							<div class="col-6">
+								<div class="form-group">
+									<label class="text-primary" for="keywords_input" style="padding-top:0px;">Enter Keywords</label>
+									<textarea type="text" class="form-control" name="keywords_input" id="keywords_input" placeholder="Type Keywords separated by comma (,) here...
+									&#10;Ex : school in ahmedabad, gym in delhi, hospital in mumbai, computer shops near me, Chemists in delhi" rows="6"></textarea>
+									<b style="font-size: 11px;"> Note :  </b> <span class="text-mute text-primary" style="font-size: 11px;"> Enter or paste the Keywords separated by comma (,).</span>
+								</div>
+							</div>
+							<div class="col-6">
+								<div class="form-group">
+									<br>
+									<input type="checkbox" name="skip_duplicate_record_check" id="skip_duplicate_record_check" class="">
+									<label for="skip_duplicate_record_check" style="padding-top:0px;">Skip Duplicate Record</label>
+									<a href="#">
+										<i class="fa fa-question-circle" title="if Mobile Number and Business Name Same to Same Exist in Easlier Search They Skip."></i>
+									</a>
+									<br>
+									<input type="checkbox" name="skip_without_number_record_check" id="skip_without_number_record_check" class="">
+									<label for="skip_without_number_record_check" style="padding-top:0px;">Skip Without Number Record</label>
+									<a href="#">
+										<i class="fa fa-question-circle" title="Skip Entry for Without Mobile Number."></i>
+									</a>
+
+								</div>
+							</div>
+						</div>
+
+						<div class="form-group mb-3 row">
+							<div class="col-6" style="font-size: 12px; font-weight: 600;padding-right: 0;">
+								<button type="submit" class="btn btn-sm btn-default"> Start Process</button>
+								<button type="button" class="btn btn-sm btn-primary" id="resume-last-Scrape-btn" style="display:none;"> Resume Last Scrape Process </button>
+							</div>
+							<div class="col-6">
+								<div class="row" style="font-size: 12px; font-weight: 600;">
+									<div class="col-6" style="margin-top: 0px;">
+										Total Processed Count : <span id="totalScrappedItems" style="color:#6a7ddb;margin-left: 15px;"></span>
+									</div>
+									<div class="col-6" style="margin-top: 0px;">
+										Current Processed Count : <span id="currentProcessedCount" style="color:#6a7ddb;margin-left: 15px;"></span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</form>
+
+				<div class="row" style="margin-left: 0;">
+					<div class="col-12 mb-3" style="background: #fff; padding: 14px;">
+						<div class="row table-responsive">
+							<div class="col-9 mb-2">
+								<h6 class="page-sub-title mb-3">
+									Data Report
+									<a href="#" data-bs-toggle="tooltip" title="This table show your messages report.">
+										&nbsp;&nbsp;<i class="fa fa-question-circle"></i>
+									</a>
+								</h6>
+							</div>
+							<div class="col-3 mb-2">
+								<button type="button" class="btn btn-sm btn-danger clear-data-btn"><i class="fa fa-trash"></i> Clear data</button>
+								<button class="btn btn-sm btn-info export-data-btn"> <i class="fa fa-download"></i> Export CSV </button>
+							</div>
+							<table class="table table-striped table-bordered">
+								<thead>
+									<tr>
+										<th>#</th>
+										<th> Category </th>
+										<th> Name </th>
+										<th> Address </th>
+										<th> Phone </th>
+										<th> Email </th>
+										<th> Website </th>
+										<th> Ratings </th>
+										<th> Reviews </th>
+									</tr>
+								</thead>
+								<tbody id="tbl_items_list">
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Start Footer Area -->
+<footer class="footer">
+	<!-- Start Middle Top -->
+	<div class="footer-middle">
+		<div class="container">
+			<div class="row">
+				<div class="col-lg-5 col-7 col-12">
+					<div class="row">
+						<div class="col-lg-12 col-12 col-12">
+							<!-- Single Widget -->
+							<div class="single-footer f-contact f-link">
+								<h3>Contact Us</h3>
+								<ul class="footer-contact">
+									<li><i class="lni lni-envelope"></i> <a href="mailto:support@scrappertool.com">support@scrappertool.com</a></li>
+									<li><i class="lni lni-world"></i> <a href="https://www.scrappertool.com" target="_blank">www.scrappertool.com</a></li>
+								</ul>
+							</div>
+							<!-- End Single Widget -->
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!--/ End Footer Middle -->
+
+	<!-- Start Footer Bottom -->
+	<div class="footer-bottom">
+		<div class="container">
+			<div class="inner">
+				<div class="row">
+					<div class="col-lg-6 col-6 col-12">
+					</div>
+					<div class="col-lg-6 col-6 col-12">
+						<div class="right">
+							<p></p>
+							<span>
+								<strong>Copyright</strong> Business Map Scrapper Tool @2023 v<span id="versionNum"></span> |
+								<a target="blank" href="https://www.scrappertool.com/privacy-policy.html">
+									<font size="2.5" color="grey">Privacy Policy</font>
+								</a>
+							</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- End Footer Middle -->
+</footer>
+<!--/ End Footer Area -->
+
+<!-- ========================= JS here ========================= -->
+<script type="text/javascript" src="../js/popper.min.js"></script>
+<script type="text/javascript" src="../js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../js/count-up.min.js"></script>
+<script type="text/javascript" src="../js/wow.min.js"></script>
+<script type="text/javascript" src="../js/imagesloaded.min.js"></script>
+<script type="text/javascript" src="../js/isotope.min.js"></script>
+<script type="text/javascript" src="../js/main.js"></script>
+<script type="text/javascript" src="../js/jquery.js"></script>
+<script type="text/javascript" src="../js/modal-loading.js"></script>
+<script type="text/javascript" src="../js/sweetalert2.min.js"></script>
+
+<script type="text/javascript" src="../js/consts.js"></script>
+<script type="text/javascript" src="../js/common.js"></script>
+<script type="text/javascript" src="../js/index.js"></script>
+</body>
+</html>
+
+</body>
+</html>

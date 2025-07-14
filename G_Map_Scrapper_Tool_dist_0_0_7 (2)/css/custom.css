@@ -1,0 +1,84 @@
+
+.services.section{
+	padding-top: 0px;
+	padding-bottom: 0px;
+}
+.footer .footer-middle{
+	padding-bottom: 19px;
+    padding-top: 0px;
+}
+table.table {
+	height: auto;
+}
+.page-sub-title {
+	font-size: 19px;
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 14px;
+}
+.page-sub-title:before {
+    position: absolute;
+    content: "";
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    width: 80px;
+    background: #3E54FF;
+}
+.form-group .form-label
+{
+	color: #6a7ddb;
+	font-size: 16px;
+	font-weight: 400;
+	padding: 20px 0px 3px 0px;
+}
+
+.btn.btnAddLabelMsg{
+	font-size: 11px;
+    cursor: pointer;
+    padding: 5px;
+}
+.start-proccess-btn{
+	color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.stop-proccess-btn{
+	background-color: #555a6b !important;
+	color: white !important;
+}
+
+.start-proccess-btn:active,
+.start-proccess-btn.focus,
+.start-proccess-btn:hover {
+	color: #fff;
+    background-color: #0b5ed7;
+    border-color: #0a58ca;
+}
+
+.stop-proccess-btn:active,
+.stop-proccess-btn.focus,
+.stop-proccess-btn:hover {
+	background-color: #4d546d !important;
+	color: white !important;
+}
+
+#register-require-section {
+	display: none;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+	-webkit-appearance: none;
+	margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+	-moz-appearance: textfield;
+}
+.logged-user-info,.free-user-info {
+	display: none;
+}
