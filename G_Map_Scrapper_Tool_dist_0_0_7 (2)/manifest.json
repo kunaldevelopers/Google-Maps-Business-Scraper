@@ -1,0 +1,52 @@
+{
+	"name": "Business Map Scrapper Tool",
+	"version": "0.0.7",
+	"description": "Business Map Scrapper Tool is Scrape the business lead informations from business Map search results pages",
+	"permissions": ["tabs","downloads","notifications","storage","webRequest"],
+	"host_permissions": [
+		"https://www.google.com/search?q=*",
+		"https://www.scrappertool.com/api/*"
+	],
+	"action": {
+		"default_icon": {
+			"16": "images/default_icon_16.png",
+			"24": "images/default_icon_24.png",
+			"32": "images/default_icon_32.png",
+			"48": "images/default_icon_48.png",
+			"128": "images/default_icon_128.png"
+		},
+		"default_title": "Business Map Scrapper Tool"
+	},
+	"icons": {
+		"16": "images/default_icon_16.png",
+		"24": "images/default_icon_24.png",
+		"32": "images/default_icon_32.png",
+		"48": "images/default_icon_48.png",
+		"128": "images/default_icon_128.png"
+	},
+	"background": {
+		"service_worker": "js/background.js"
+	},
+	"content_scripts": [
+		{
+			"matches": [ "https://*/*" ],
+			"js":["libs/jquery-3.1.1.min.js","libs/toastr.min.js","js/lodash.js","contentscript/content.js"],
+			"css" : ["css/toastr.min.css"],
+			"run_at":"document_start"
+		}
+	],
+	"web_accessible_resources": [
+		{
+			"resources": [
+				"css/*",
+				"js/*",
+				"images/*",
+				"libs/*",
+				"html/*",
+				"contentscript/interceptData.js"
+			],
+			"matches": ["<all_urls>"]
+		}
+	],
+	"manifest_version": 3
+}

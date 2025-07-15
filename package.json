@@ -1,0 +1,27 @@
+{
+  "name": "google-maps-scraper",
+  "version": "1.0.0",
+  "description": "Advanced Google Maps business data scraper",
+  "main": "G-Map-Extractor.js",
+  "type": "module",
+  "scripts": {
+    "start": "node G-Map-Extractor.js"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "cheerio": "^1.0.0-rc.12",
+    "express": "^4.19.2",
+    "mongoose": "^8.5.2",
+    "p-limit": "^5.0.0",
+    "puppeteer": "^23.0.2",
+    "puppeteer-extra": "^3.3.6",
+    "puppeteer-extra-plugin-stealth": "^2.11.2",
+    "uuid": "^10.0.0",
+    "winston": "^3.13.1",
+    "xlsx": "^0.18.5"
+  },
+  "overrides": {
+    "ws": "^8.18.1",
+    "undici": "^6.21.2"
+  }
+}
