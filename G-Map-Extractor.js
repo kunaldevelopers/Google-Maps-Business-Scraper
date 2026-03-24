@@ -491,8 +491,12 @@ const extractName = ($) => {
 const extractPhone = async ($, page) => {
   // First try to extract from DOM using existing selectors
   const selectors = [
+    'button[data-item-id^="phone:tel:"]',
+    'button[aria-label^="Phone:"]',
+    'button[data-tooltip*="phone"]',
     'a[href^="tel:"]',
     '[data-item-id="phone"]',
+    '.CsEnBe', // Current class for phone button
     'div:contains("Phone")',
   ];
 
@@ -502,11 +506,16 @@ const extractPhone = async ($, page) => {
   for (const selector of selectors) {
     const element = $(selector);
     if (element.length) {
-      const text =
-        element.attr("href")?.replace("tel:", "") || element.text().trim();
+      // Prioritize aria-label as it often contains the clean phone number
+      let text = element.attr("aria-label")?.replace("Phone:", "").trim() || 
+                 element.attr("href")?.replace("tel:", "").trim() || 
+                 element.find(".Io6YTe").first().text().trim() ||
+                 element.text().trim();
+      
       const cleaned = text.replace(/[^\d+]/g, "");
       if (cleaned.length >= 10) {
         phoneNumber = cleaned;
+        logger.info(`Extracted phone "${phoneNumber}" using selector "${selector}"`);
         break;
       }
     }
@@ -594,16 +603,30 @@ const extractRatingCount = ($) => {
 };
 
 const extractAddress = ($) => {
-  const selectors = ['div:contains("Address")', 'div[class*="fontBodyMedium"]'];
+  const selectors = [
+    'button[data-item-id="address"]',
+    'button[aria-label^="Address"]',
+    'div[class*="fontBodyMedium"]',
+    'div:contains("Address")'
+  ];
   for (const selector of selectors) {
-    const text = $(selector).text().trim();
-    if (text && !text.includes("Directions")) return text;
+    const element = $(selector);
+    if (element.length) {
+        const text = element.find(".Io6YTe").text().trim() || element.text().trim();
+        // Ensure it's not just an icon or "Directions"
+        const cleanText = text.replace(/[]/g, "").trim();
+        if (cleanText && !cleanText.includes("Directions") && cleanText.length > 5) {
+            logger.info(`Extracted address "${cleanText}"`);
+            return cleanText;
+        }
+    }
   }
   return null;
 };
 
 const extractCategory = ($) => {
   const selectors = [
+    'button.DkEaL', // Core category class
     'span:contains("Category")',
     'button[class*="fontBodyMedium"]',
   ];
@@ -615,8 +638,16 @@ const extractCategory = ($) => {
 };
 
 const extractWebsite = ($) => {
-  const link = $('a[href^="http"]:not([href*="google.com"])').attr("href");
-  return link || null;
+  const selectors = [
+    'a[data-item-id="authority"]',
+    'a.CsEnBe[aria-label^="Website"]',
+    'a[href^="http"]:not([href*="google.com"])'
+  ];
+  for (const selector of selectors) {
+    const link = $(selector).attr("href");
+    if (link) return link;
+  }
+  return null;
 };
 
 const extractHoursOfOperation = ($) => {
@@ -1227,11 +1258,18 @@ const enhanceAPIDataWithDetailPages = async (browser, apiData, options) => {
 
       // Construct Google Maps place URL
       const placeName = encodeURIComponent(item.name);
-      const placeUrl = item.uuid
-        ? `https://www.google.com/maps/place/?q=place_id:${item.uuid}`
-        : `https://www.google.com/maps/search/${placeName}`;
+      let placeUrl = `https://www.google.com/maps/search/${placeName}`;
+      
+      // If we have a CID or Feature ID (0x format), use the direct data URL
+      if (item.uuid) {
+        if (item.uuid.startsWith('0x')) {
+            placeUrl = `https://www.google.com/maps/place/data=!3m1!4b1!4m2!3m1!1s${item.uuid}`;
+        } else {
+            placeUrl = `https://www.google.com/maps/place/?q=place_id:${item.uuid}`;
+        }
+      }
 
-      logger.info(chalk.blue(`Enhancing data for item ${i + 1}: ${item.name}`));
+      logger.info(chalk.blue(`Enhancing data for item ${i + 1}: ${item.name} | URL: ${placeUrl}`));
 
       // Add a delay between requests to avoid detection
       await sleep(getRandomDelay(3000, 6000));
@@ -1259,6 +1297,20 @@ const enhanceAPIDataWithDetailPages = async (browser, apiData, options) => {
       }
 
       await checkForCaptcha(detailPage);
+
+      // Wait for content to load - Google Maps uses skeleton states
+      // We look for address or phone buttons specifically
+      try {
+        await Promise.race([
+          detailPage.waitForSelector('button[data-item-id="address"] .Io6YTe', { timeout: 8000 }),
+          detailPage.waitForSelector('button[data-item-id^="phone:tel:"]', { timeout: 8000 }),
+          detailPage.waitForSelector('.Io6YTe', { timeout: 8000 })
+        ]);
+        // Extra short sleep to ensure all text is fully rendered
+        await sleep(1500);
+      } catch (e) {
+        logger.warn(chalk.yellow(`Warning: Detail elements for ${item.name} taking long to load or not found. Continuing...`));
+      }
 
       // Extract any missing data using DOM methods as a fallback
       const content = await detailPage.content();
@@ -1603,12 +1655,31 @@ const scrapePage = async (url, options) => {
       try {
         const results = [];
         const processedNames = new Set();
+        
+        // Helper function for cleaning text within browser context
+        const cleanAddressText = (text) => {
+            if (!text) return "";
+            // Remove common decorative icons and hidden characters
+            let cleaned = text.replace(/[]/g, "").trim();
+            // Remove phone numbers that might be masquerading as addresses
+            if (cleaned.match(/^(\+?\d{1,4}[\s-])?(\(?\d{3}\)?[\s-])?\d{3}[\s-]\d{4}$/) || 
+                cleaned.match(/^\d{10,12}$/) ||
+                cleaned.match(/^0\d{10,11}$/)) {
+                return "";
+            }
+            // Remove lines that are just ratings or reviews
+            if (cleaned.includes("(") && cleaned.includes(")") && cleaned.match(/\d+\.\d+/)) {
+                return "";
+            }
+            return cleaned.replace(/·/g, "").trim();
+        };
 
         // Enhanced listing selectors - Updated for current Google Maps structure
+        // Matching the broad set used in autoScrollGoogleMaps to ensure no data is missed
         const listingSelectors = [
           'div[role="article"]',
           'div[class*="Nv2PK"]',
-          'a[href*="/maps/place"]',
+          'a[href*="maps/place"]',
           'div[class*="hfpxzc"]',
           'div[jsaction*="mouseover:pane"]',
           "div[data-result-index]",
@@ -1654,14 +1725,63 @@ const scrapePage = async (url, options) => {
               }
             }
 
-            // Skip if no valid name found or already processed
-            if (!name || name.length < 2 || processedNames.has(name)) continue;
-            processedNames.add(name);
+            // Extract the details URL early to use for deduplication
+            const linkSelectors = ['a[href*="/maps/place"]', "[data-value]"];
+            let detailUrl = "";
+            for (const selector of linkSelectors) {
+              const linkElement =
+                listing.querySelector(selector) || listing.closest(selector);
+              if (linkElement) {
+                let href = linkElement.getAttribute("href");
+                if (!href && linkElement.hasAttribute("data-value")) {
+                  const dataValue = linkElement.getAttribute("data-value");
+                  if (dataValue) href = `/maps/place/${dataValue}`;
+                }
+
+                if (href) {
+                  detailUrl = href.startsWith("http")
+                    ? href
+                    : `https://www.google.com${href}`;
+                  break;
+                }
+              }
+            }
+
+            // Skip if no valid name found
+            if (!name || name.length < 2) continue;
+            
+            // Extract address early for smarter deduplication
+            let tempAddress = "";
+            const addrSelectors = [".section-result-location", 'div[class*="W4Efsd"]', 'span[class*="W4Efsd"]'];
+            for (const sel of addrSelectors) {
+                const el = listing.querySelector(sel);
+                if (el) {
+                    const cleaned = cleanAddressText(el.textContent);
+                    if (cleaned && cleaned.length > 5) {
+                        tempAddress = cleaned;
+                        break;
+                    }
+                }
+            }
+            
+            // Fallback for address from innerText
+            if (!tempAddress && listing.innerText) {
+                const lines = listing.innerText.split('\n');
+                if (lines.length >= 3) {
+                    const potential = cleanAddressText(lines[2].split('·').pop());
+                    if (potential.length > 5) tempAddress = potential;
+                }
+            }
+
+            // Use Name + Address (or URL) for deduplication
+            const dedupKey = name + (tempAddress.substring(0, 30) || detailUrl);
+            if (processedNames.has(dedupKey)) continue;
+            processedNames.add(dedupKey);
 
             // Create listing data with default values
             const item = {
               name: name,
-              address: "",
+              address: tempAddress,
               category: "",
               rating: 0,
               ratingCount: "0",
@@ -1669,7 +1789,7 @@ const scrapePage = async (url, options) => {
               website: "",
               hoursOfOperation: "",
               detailsNeeded: true,
-              detailUrl: "",
+              detailUrl: detailUrl,
             };
 
             // Extract rating - Multiple selectors for different layouts
@@ -1744,52 +1864,27 @@ const scrapePage = async (url, options) => {
               }
             }
 
-            // Extract address if available in search results
-            const addressSelectors = [
-              ".section-result-location",
-              'div[class*="fontBodySmall"]',
-              'span[class*="fontBodySmall"]',
-            ];
+            // Final Address Extraction if not already found
+            if (!item.address) {
+                const addressSelectors = [
+                  ".section-result-location",
+                  'div[class*="fontBodySmall"]',
+                  'span[class*="fontBodySmall"]',
+                  'div.W4Efsd:nth-child(2) span:nth-child(2) span:nth-child(2)',
+                  'div.UaQhfb.fontBodyMedium > div.W4Efsd',
+                  '.UaQhfb .W4Efsd'
+                ];
 
-            for (const selector of addressSelectors) {
-              const addressElement = listing.querySelector(selector);
-              if (addressElement) {
-                const addressText = addressElement.textContent.trim();
-                if (
-                  addressText &&
-                  addressText.length > 10 &&
-                  !addressText.includes("★")
-                ) {
-                  item.address = addressText;
-                  break;
-                }
-              }
-            }
-
-            // Extract the details URL - Multiple approaches
-            const linkSelectors = ['a[href*="/maps/place"]', "[data-value]"];
-
-            let detailUrl = "";
-            for (const selector of linkSelectors) {
-              const linkElement =
-                listing.querySelector(selector) || listing.closest(selector);
-              if (linkElement) {
-                let href = linkElement.getAttribute("href");
-                if (!href && linkElement.hasAttribute("data-value")) {
-                  // Try to construct URL from data-value
-                  const dataValue = linkElement.getAttribute("data-value");
-                  if (dataValue) {
-                    href = `/maps/place/${dataValue}`;
+                for (const selector of addressSelectors) {
+                  const addressElement = listing.querySelector(selector);
+                  if (addressElement) {
+                    const cleaned = cleanAddressText(addressElement.textContent);
+                    if (cleaned && cleaned.length > 5) {
+                      item.address = cleaned;
+                      break;
+                    }
                   }
                 }
-
-                if (href) {
-                  detailUrl = href.startsWith("http")
-                    ? href
-                    : `https://www.google.com${href}`;
-                  break;
-                }
-              }
             }
 
             item.detailUrl = detailUrl;
@@ -2093,13 +2188,17 @@ const startScraping = async (query, options) => {
 
     const nameKey = item.name.toLowerCase().replace(/\s+/g, "");
     const phoneKey = item.phone ? item.phone.replace(/\D/g, "") : "";
+    const addressKey = item.address ? item.address.toLowerCase().substring(0, 30) : "";
+    
+    // Improved deduplication: Use name + address or phone to allow multiple locations
     const keys = [
       `${nameKey}|${phoneKey}`,
       phoneKey.length >= 10 ? phoneKey : null,
+      `${nameKey}|${addressKey}`
     ].filter(Boolean);
 
     if (keys.some((key) => seen.has(key))) {
-      logger.warn(chalk.yellow(`Skipping duplicate: ${item.name}`));
+      logger.warn(chalk.yellow(`Skipping true duplicate (same name and address/phone): ${item.name}`));
       dupCount++;
     } else {
       keys.forEach((key) => seen.set(key, item.name));

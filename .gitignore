@@ -2,8 +2,6 @@
 node_modules/
 npm-debug.log*
 
-
-
 # Logs
 logs/
 *.log
@@ -11,3 +9,17 @@ scraper.log
 debug.log
 error.log
 
+# Scraper Outputs
+google_maps_exports/
+*.xlsx
+*.csv
+captcha_screenshot.png
+
+# Environment & Config
+.env
+.env.local
+.vscode/
+.idea/
+
+# User Input Data
+keyworddata.txt
